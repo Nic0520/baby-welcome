@@ -144,6 +144,10 @@ body.lock .rise{animation-play-state:paused}
 h2{position:relative;padding-bottom:.6em}
 h2::after{content:"";position:absolute;left:50%;bottom:0;width:0;height:3px;border-radius:3px;background:linear-gradient(90deg,#f472a8,#b08cf5);transform:translateX(-50%);transition:width .9s .4s cubic-bezier(.2,.8,.2,1)}
 h2.in::after{width:44px}
+#mu{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;width:46px;height:46px;border:0;border-radius:50%;font-size:1.25rem;line-height:1;background:rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(150,120,190,.3);cursor:pointer;display:none;opacity:.6;-webkit-tap-highlight-color:transparent}
+#mu.on{display:block}
+#mu.pl{opacity:1;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 section.sx{opacity:0;transform:translateY(70px)}
 section.sx.in{opacity:1;transform:none;transition:opacity 2.2s ease,transform 2.4s cubic-bezier(.2,.8,.2,1)}
 .vc{display:inline-block;opacity:0;transform:translateY(.3em);will-change:opacity,transform;transition:opacity .7s ease-out,transform .9s cubic-bezier(.2,.8,.2,1)}
@@ -204,6 +208,7 @@ section.sx.in{opacity:1;transform:none;transition:opacity 2.2s ease,transform 2.
 <div class="ctl"><button id="bp" aria-label="上一个">‹</button><span id="bcnt"></span><button id="bn" aria-label="下一个">›</button></div>
 </section>
 
+<button id="mu" aria-label="音乐">🎵</button>
 <footer><span class="hb" id="hb" role="button" tabindex="0" aria-label="送出爱心">💗</span><br>愿这位小公主，在爱中长大 🎀</footer>
 
 <script>
@@ -251,11 +256,15 @@ sky.appendChild(w);
 for(var k=0;k<4;k++)setTimeout(spawn,k*900);
 setInterval(function(){if(sky.querySelectorAll('.f').length<6)spawn()},2600);
 var intro=document.getElementById('intro');
+var yt=null,playing=false,mu=document.getElementById('mu');
+function ytCmd(f){if(yt&&yt.contentWindow)yt.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:''}),'*')}
+function startMusic(){if(yt)return;yt=document.createElement('iframe');yt.src='https://www.youtube.com/embed/tQ8416-jL9I?autoplay=1&loop=1&playlist=tQ8416-jL9I&controls=0&playsinline=1&enablejsapi=1&rel=0';yt.allow='autoplay; encrypted-media';yt.title='music';yt.style.cssText='position:fixed;left:0;bottom:0;width:2px;height:2px;border:0;opacity:0;pointer-events:none';document.body.appendChild(yt);playing=true;mu.classList.add('on','pl')}
+mu.addEventListener('click',function(){if(playing){ytCmd('pauseVideo');playing=false;mu.classList.remove('pl')}else{ytCmd('playVideo');playing=true;mu.classList.add('pl')}});
 var sp=document.getElementById('splash'),sd=false;
 function endSplash(){if(sd)return;sd=true;sp.classList.add('out');intro.classList.add('rd');setTimeout(function(){sp.remove()},1000)}
 sp.addEventListener('click',endSplash);setTimeout(endSplash,3000);
 (function(){var env=document.getElementById('open'),done=false;
-function open(){if(done)return;done=true;var r=env.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;env.classList.add('go');
+function open(){if(done)return;done=true;var r=env.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;env.classList.add('go');startMusic();
 var E=['💗','💖','💕','🤍'];
 for(var j=0;j<12;j++)(function(j){setTimeout(function(){var p=document.createElement('div');p.textContent=E[j%4];var dx=Math.random()*160-80;p.style.cssText='position:absolute;left:'+(x+Math.random()*60-30)+'px;top:'+y+'px;font-size:'+(18+Math.random()*16)+'px;pointer-events:none;z-index:3';intro.appendChild(p);p.animate([{transform:'translate(-50%,-50%) scale(.6)',opacity:0},{opacity:1,offset:.2},{transform:'translate(calc(-50% + '+dx+'px),-'+(160+Math.random()*180)+'px) scale(1)',opacity:0}],{duration:1800+Math.random()*600,easing:'cubic-bezier(.3,.6,.4,1)'}).onfinish=function(){p.remove()}},200+j*90)})(j);
 setTimeout(function(){intro.classList.add('out');document.body.classList.remove('lock');burst(innerWidth/2,innerHeight*.4,70)},1100);setTimeout(function(){intro.remove()},2400)}
